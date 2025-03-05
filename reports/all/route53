@@ -1,0 +1,72 @@
+# AWS Troubleshooting: gptpat.com DNS Configuration
+
+## Objective
+Configured `gptpat.com` in Route 53 for WorkMail, resolving DNS issues post-GoDaddy transfer.
+
+## Challenges
+- **Nameserver Mismatch**: Fixed misalignment between registered domain and hosted zone.
+- **Regional Conflicts**: Updated records from `us-west-2` to `us-east-1`.
+- **CNAME Apex Error**: Mitigated `InvalidChangeBatch 400` error.
+
+## Resolution
+- Synchronized nameservers: `ns-318.awsdns-39.com`, etc.
+- Updated records: MX, CNAME, TXT (e.g., `"5X05kWuT9X/Zk/uL7GD/uivTy1XX1ZiYj70S3KmqRQo="`).
+- Added SPF/DMARC for security.
+
+## Results
+- WorkMail operational in ~2-3 hours; 10 tasks completed.
+- Skills: Route 53, WorkMail, DNS diagnostics.
+
+
+--------
+
+3.5.25 | AWS Troubleshooting Case Study: Configuring gptpat.com with Route 53 and WorkMail
+Objective
+Successfully configured the domain gptpat.com in AWS Route 53 to support Amazon WorkMail after a transfer from GoDaddy, resolving multiple DNS-related issues while maintaining functionality with Amazon Lightsail. Demonstrated expertise in DNS management, AWS service integration, and error resolution within a production environment.
+Environment
+AWS Services: Route 53, WorkMail (us-east-1), Lightsail
+Domain: gptpat.com
+Timeline: March 05, 2025
+Duration: ~2-3 hours active troubleshooting + propagation wait
+Challenges Identified
+Nameserver Misalignment:
+Registered domain nameservers (ns-1060.awsdns-04.org, etc.) diverged from hosted zone (ns-318.awsdns-39.com, etc.), disrupting DNS authority.
+Regional DNS Conflicts:
+Existing records pointed to WorkMail in us-west-2 (e.g., inbound-smtp.us-west-2.amazonaws.com), conflicting with us-east-1 requirements.
+CNAME Apex Violation:
+Encountered InvalidChangeBatch 400 error due to an attempted CNAME at the apex (gptpat.com), violating DNS standards.
+Record Misplacement:
+TXT record for domain ownership (_amazonses) was incorrectly set at the apex instead of the subdomain.
+Outdated DKIM Records:
+Existing DKIM CNAMEs mismatched WorkMail’s required values, hindering email security.
+Resolution Strategy
+Nameserver Synchronization:
+Analyzed and updated registered domain nameservers in Route 53 to match the hosted zone, ensuring authoritative control.
+Command-line validation: nslookup -type=NS gptpat.com.
+Conflict Resolution:
+Identified discrepancies using WorkMail’s DNS requirements; updated MX (10 inbound-smtp.us-east-1.amazonaws.com) and CNAME (autodiscover.mail.us-east-1.awsapps.com) records to align with us-east-1.
+Removed us-west-2 references to eliminate regional conflicts.
+CNAME Apex Mitigation:
+Diagnosed the error source as a WorkMail automation glitch; manually configured subdomains (e.g., autodiscover.gptpat.com) to avoid apex CNAME restrictions.
+Ensured apex compatibility with A/ALIAS records if needed for Lightsail.
+Record Correction:
+Relocated the _amazonses TXT record ("5X05kWuT9X/Zk/uL7GD/uivTy1XX1ZiYj70S3KmqRQo=") to its proper subdomain, adhering to SES verification protocols.
+Validated TXT formatting with quotes per DNS best practices.
+DKIM and Security Enhancement:
+Replaced outdated DKIM records with WorkMail-specified CNAMEs (e.g., afjw4svf63l77fpgth5y4mrbvnl7bhya.dkim.amazonses.com).
+Added SPF ("v=spf1 include:amazonses.com ~all") and DMARC ("v=DMARC1;p=quarantine;pct=100;fo=1") TXT records for robust email security.
+Verification and Testing:
+Leveraged WorkMail’s "Update all in Route 53" feature post-correction, achieving a "configured correctly" status.
+Conducted DNS propagation tests: nslookup -type=MX gptpat.com, nslookup -type=CNAME autodiscover.gptpat.com.
+Results
+Outcome: Fully operational WorkMail setup for gptpat.com in us-east-1, with all DNS records (MX, TXT, CNAME) validated and pending propagation.
+Tasks Completed: 10 (nameserver update, record edits, error resolution, verification).
+Skills Demonstrated:
+Advanced Route 53 DNS management (nameservers, record types, propagation).
+WorkMail integration and SES configuration.
+Error handling (CNAME apex, regional conflicts).
+Command-line diagnostics and AWS console proficiency.
+Key Takeaways
+Precision in DNS configuration is critical for AWS service interoperability.
+Proactive conflict resolution and manual overrides enhance automation reliability.
+Regional alignment is essential for seamless service operation.
